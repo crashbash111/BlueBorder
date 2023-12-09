@@ -12,8 +12,11 @@ import org.bukkit.WorldBorder;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -25,11 +28,22 @@ public final class BlueBorder extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        saveDefaultConfig();
-        config = getConfig();
+        File configFile = new File(getDataFolder(), "config.yml");
+        config = YamlConfiguration.loadConfiguration(configFile);
 
-        //checks config for border color
-        if (config.contains("borderColor.red") && config.contains("borderColor.green") && config.contains("borderColor.blue")){
+        // Create config.yml if it doesn't exist
+        if (!configFile.exists()) {
+            config.set("borderColor.red", borderColor.getRed());
+            config.set("borderColor.green", borderColor.getGreen());
+            config.set("borderColor.blue", borderColor.getBlue());
+            try {
+                config.save(configFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        //checks config for border color if exists
+        else if (config.contains("borderColor.red") && config.contains("borderColor.green") && config.contains("borderColor.blue")){
             int red = config.getInt("borderColor.red");
             int green = config.getInt("borderColor.green");
             int blue = config.getInt("borderColor.blue");
@@ -37,7 +51,7 @@ public final class BlueBorder extends JavaPlugin {
                 borderColor = new Color(red, green, blue, 1f);
             }
             else{
-                getServer().getConsoleSender().sendMessage("[" + LABEL + "] Invalid color values in config. Using default color.");
+                getServer().getConsoleSender().sendMessage("[" + this.getName() + "] Invalid color values in config. Using default color.");
                 //assume config invalid, save new file
                 saveBorderColor(borderColor);
             }
@@ -54,9 +68,9 @@ public final class BlueBorder extends JavaPlugin {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if(label.equalsIgnoreCase(MARKER_SET_ID)) {
+        if(label.equalsIgnoreCase(this.getName())) {
             if(args.length == 0) {
-                sender.sendMessage("Usage: /worldborder refresh, /worldborder color <red> <green> <blue>");
+                sender.sendMessage("Usage: /blueborder refresh, /blueborder color <red> <green> <blue>");
                 return false;
             }
             else if(args.length > 0){
@@ -68,7 +82,7 @@ public final class BlueBorder extends JavaPlugin {
                 }
                 else if(args[0].equalsIgnoreCase("color")) {
                     if(args.length != 4) {
-                        sender.sendMessage("Usage: /worldborder color <red> <green> <blue>");
+                        sender.sendMessage("Usage: /blueborder color <red> <green> <blue>");
                         return false;
                     }
                     try {
@@ -93,7 +107,7 @@ public final class BlueBorder extends JavaPlugin {
                 } 
             }
             else {
-                sender.sendMessage("Usage: /worldborder refresh, /worldborder color <red> <green> <blue>");
+                sender.sendMessage("Usage: /blueborder refresh, /blueborder color <red> <green> <blue>");
                 return false;
             }
         }
@@ -104,7 +118,11 @@ public final class BlueBorder extends JavaPlugin {
         config.set("borderColor.red", color.getRed());
         config.set("borderColor.green", color.getGreen());
         config.set("borderColor.blue", color.getBlue());
-        saveConfig();
+        try {
+            config.save(new File(getDataFolder(), "config.yml"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
