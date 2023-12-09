@@ -9,4 +9,6 @@ Simply install BlueBorder into your plugins folder.
 
 When the plugin is loaded markers will be added to BlueMap for all vanilla world borders.
 
-You can force reload the markers with the `/blueborder` command.
+You can force reload the markers with the `/blueborder refresh` command.
+
+You can configure the world border marker color using `/blueborder color <red> <green> <blue>` or by modifying the generated config file under Plugins > Blueborder
